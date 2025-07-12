@@ -58,7 +58,6 @@ public class WbParserService implements ParserService {
                 .setLink(buildLink(product));
     }
 
-    @SneakyThrows
     private Map<String, Object> buildWbQuery(Category category) {
         WbQueryDTO wbQueryDTO = new WbQueryDTO()
                 .setQuery(category.getName());

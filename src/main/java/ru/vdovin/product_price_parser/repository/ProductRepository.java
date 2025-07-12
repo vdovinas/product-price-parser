@@ -10,5 +10,5 @@ import java.util.List;
 public interface ProductRepository extends CrudRepository<Product, Long> {
     List<Product> findByExternalIdInAndSource(List<String> externalIds, Source source);
 
-    void deleteProductByCategoryAndSource(Category category, Source source);
+    void deleteProductByCategory(Category category);
 }
