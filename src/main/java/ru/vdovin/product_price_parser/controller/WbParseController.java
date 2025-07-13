@@ -24,7 +24,7 @@ public class WbParseController {
 
     @GetMapping(value = "/test/kafka")
     public void testkafka() {
-        aggregationService.processCategories();
+        aggregationService.processSubcategories();
     }
 
 }

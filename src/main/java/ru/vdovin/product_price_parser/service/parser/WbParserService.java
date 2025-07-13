@@ -6,11 +6,12 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import ru.vdovin.product_price_parser.client.WbClient;
-import ru.vdovin.product_price_parser.enums.Source;
+import ru.vdovin.product_price_parser.enums.SourceType;
 import ru.vdovin.product_price_parser.model.dto.BaseProduct;
 import ru.vdovin.product_price_parser.model.dto.wb.WbQueryDTO;
 import ru.vdovin.product_price_parser.model.dto.wb.WbSearchResponseDTO;
 import ru.vdovin.product_price_parser.model.entity.Category;
+import ru.vdovin.product_price_parser.model.entity.Subcategory;
 import ru.vdovin.product_price_parser.model.entity.CategoryMetaData;
 import ru.vdovin.product_price_parser.repository.CategoryRepository;
 
@@ -31,42 +32,47 @@ public class WbParserService implements ParserService {
 
     public List<BaseProduct> search(Long categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow();
-        return loadProducts(category);
+        return category.getSubcategories().stream()
+                .flatMap(subcategory -> loadProducts(subcategory).stream())
+                .toList();
     }
 
     @SneakyThrows
-    public List<BaseProduct> loadProducts(Category category) {
-        Map<String, Object> query = buildWbQuery(category);
+    public List<BaseProduct> loadProducts(Subcategory subcategory) {
+        Map<String, Object> query = buildWbQuery(subcategory);
 
         List<WbSearchResponseDTO.ProductDTO> products = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) { // TODO: количество страниц вынести в настройки категории
+        for (int i = 1; i <= subcategory.getPageCount(); i++) {
             query.put("page", i);
             products.addAll(wbClient.search(query).getProducts());
 
             Thread.sleep(1000); // Защита от 429 ошибки. Не будет работать, если будет нужна параллельная обработка
         }
 
-        return products.stream().map(this::buildBaseProduct).toList();
+        return products.stream()
+                .map(product -> buildBaseProduct(product, subcategory))
+                .toList();
     }
 
-    private BaseProduct buildBaseProduct(WbSearchResponseDTO.ProductDTO product) {
+    private BaseProduct buildBaseProduct(WbSearchResponseDTO.ProductDTO product, Subcategory subcategory) {
         return new BaseProduct()
                 .setId(product.getId())
                 .setName(product.getName())
-                .setSource(Source.WB)
+                .setSource(SourceType.WB)
                 .setNewPrice(product.getSizes().get(0).getPrice().getProduct())
-                .setLink(buildLink(product));
+                .setLink(buildLink(product))
+                .setSubcategory(subcategory.getName());
     }
 
-    private Map<String, Object> buildWbQuery(Category category) {
+    private Map<String, Object> buildWbQuery(Subcategory subcategory) {
         WbQueryDTO wbQueryDTO = new WbQueryDTO()
-                .setQuery(category.getName());
+                .setQuery(subcategory.getName());
 
         Map<String, Object> queryMap = objectMapper.convertValue(wbQueryDTO, new TypeReference<>() {});
 
-        if (category.getMetaData() != null && !category.getMetaData().isEmpty()) {
+        if (subcategory.getMetaData() != null && !subcategory.getMetaData().isEmpty()) {
             queryMap.putAll(
-                    category.getMetaData().stream()
+                    subcategory.getMetaData().stream()
                             .collect(Collectors.toMap(CategoryMetaData::getCode, CategoryMetaData::getValue))
             );
         }

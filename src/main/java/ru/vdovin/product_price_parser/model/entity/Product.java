@@ -3,7 +3,6 @@ package ru.vdovin.product_price_parser.model.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import ru.vdovin.product_price_parser.enums.Source;
 
 import java.time.LocalDateTime;
 
@@ -22,12 +21,13 @@ public class Product {
 
     private Long price;   // Текущая цена
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "source_id")
     private Source source;            // Источник товара
 
-    private LocalDateTime lastUpdated; // Дата последнего обновления
+    private LocalDateTime lastUpdatedDate; // Дата последнего обновления
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @JoinColumn(name = "subcategory_id", nullable = false)
+    private Subcategory subcategory;
 }

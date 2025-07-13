@@ -17,6 +17,7 @@
     <properties>
         <java.version>17</java.version>
         <spring.cloud.version>4.3.0</spring.cloud.version>
+        <flyway.version>9.1.4</flyway.version>
     </properties>
 
     <dependencies>
@@ -50,6 +51,11 @@
             <artifactId>spring-kafka</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -58,7 +64,43 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>${flyway.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <url>${db.url}</url>
+                    <user>${db.username}</user>
+                    <password>${db.password}</password>
+                    <lockRetryCount>10</lockRetryCount>
+                    <outOfOrder>true</outOfOrder>
+                    <cleanDisabled>false</cleanDisabled>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <id>local</id>
+            <properties>
+                <db.url>jdbc:postgresql://localhost:5432/product_price_parser</db.url>
+                <db.username>postgres-dev</db.username>
+                <db.password>password</db.password>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
