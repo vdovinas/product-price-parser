@@ -32,7 +32,7 @@ public class WbParserService implements ParserService {
 
     public List<BaseProduct> search(Long categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow();
-        return category.getSubcategories().stream()
+        return category.getActiveSubcategories().stream()
                 .flatMap(subcategory -> loadProducts(subcategory).stream())
                 .toList();
     }

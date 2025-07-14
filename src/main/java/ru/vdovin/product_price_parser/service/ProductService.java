@@ -22,11 +22,16 @@ public class ProductService {
         return repository.findByExternalIdInAndSourceId(externalIds, sourceType.getId());
     }
 
-    public void deleteProductBySubcategory(Subcategory subcategory) {
+    private void deleteProductBySubcategory(Subcategory subcategory) {
         repository.deleteProductBySubcategory(subcategory);
     }
 
-    public void save(List<BaseProduct> products, Subcategory subcategory) {
+    public void merge(List<BaseProduct> products, Subcategory subcategory) {
+
+        // Удаление всех ранее сохраненных данных по подкатегории
+        deleteProductBySubcategory(subcategory);
+
+        // Сохранение новых данных
         repository.saveAll(products.stream().map(product -> mapToEntity(product, subcategory)).toList());
     }
 

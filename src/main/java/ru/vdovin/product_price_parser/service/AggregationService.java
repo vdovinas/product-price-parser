@@ -40,14 +40,10 @@ public class AggregationService {
         List<BaseProduct> productsForNotification = filterProductsByDiscount(products, subcategory);
 
         transactionTemplate.executeWithoutResult(transactionStatus -> {
+            // 3. Обновить данные по категории
+            productService.merge(products, subcategory);
 
-            // 3. Удалить предыдущие значения по категории
-            productService.deleteProductBySubcategory(subcategory);
-
-            // 4. Сохранить новые значения
-            productService.save(products, subcategory);
-
-            // 5. Сформировать уведомления при изменении суммы
+            // 4. Сформировать уведомления при изменении суммы
             productsForNotification.forEach(product ->
                     kafkaProducer.send(
                             product,

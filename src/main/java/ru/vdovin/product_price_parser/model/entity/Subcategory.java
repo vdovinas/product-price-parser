@@ -17,7 +17,7 @@ public class Subcategory {
 
     private boolean isActive;
 
-    @OneToMany(mappedBy =  "subcategory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy =  "subcategory", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CategoryMetaData> metaData;
 
     private Integer minDiscountPercent;

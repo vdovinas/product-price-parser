@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "category")
@@ -20,4 +21,8 @@ public class Category {
 
     @OneToMany(mappedBy =  "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Subcategory> subcategories;
+
+    public List<Subcategory> getActiveSubcategories() {
+        return getSubcategories().stream().filter(Subcategory::isActive).collect(Collectors.toList());
+    }
 }
