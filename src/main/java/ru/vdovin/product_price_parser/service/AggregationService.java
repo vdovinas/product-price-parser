@@ -8,7 +8,6 @@ import ru.vdovin.product_price_parser.enums.SourceType;
 import ru.vdovin.product_price_parser.model.dto.BaseProduct;
 import ru.vdovin.product_price_parser.model.entity.Subcategory;
 import ru.vdovin.product_price_parser.model.entity.Product;
-import ru.vdovin.product_price_parser.repository.SubcategoryRepository;
 import ru.vdovin.product_price_parser.service.parser.WbParserService;
 
 import java.util.List;
@@ -21,14 +20,14 @@ import static ru.vdovin.product_price_parser.utils.CalcUtils.calcDiscount;
 @RequiredArgsConstructor
 public class AggregationService {
 
-    private final SubcategoryRepository subcategoryRepository;
+    private final CategoryService categoryService;
     private final WbParserService wbParserService;
     private final KafkaProducer kafkaProducer;
     private final ProductService productService;
     private final TransactionTemplate transactionTemplate;
 
     public void processSubcategories() {
-        List<Subcategory> subcategories = subcategoryRepository.findByIsActiveTrue();
+        List<Subcategory> subcategories = categoryService.getAllActiveSubcategories();
         subcategories.forEach(this::processSubcategory);
     }
 
